@@ -6,13 +6,11 @@
         <script src="https://unpkg.com/aframe-chromakey-material/dist/aframe-chromakey-material.min.js"></script>
         
         <script>
-            // マーカー認識時に確実に動画をキックする仕組み
             AFRAME.registerComponent('ar-video-control', {
                 init: function () {
                     var video = document.querySelector("#vid1");
                     
                     this.el.addEventListener('markerFound', function () {
-                        // iOSのブロックを回避しつつ再生を試みる処理
                         var playPromise = video.play();
                         if (playPromise !== undefined) {
                             playPromise.catch(function(error) {
@@ -37,7 +35,6 @@
             embedded
         >
             <a-assets>
-                <!-- srcの末尾に #t=0.001 を追加してiOSの描画バグを回避 -->
                 <video 
                     id="vid1" 
                     src="assets/m1.mp4#t=0.001" 
@@ -50,13 +47,17 @@
                 </video>
             </a-assets>
 
-            <!-- ar-video-controlを追加 -->
+            <!-- ブレ補正の属性を追加 -->
             <a-marker
                 id="animated-marker"
                 type="pattern"
                 preset="custom"
                 url="assets/marker.patt"
                 ar-video-control
+                smooth="true"
+                smoothCount="10"
+                smoothTolerance="0.01"
+                smoothThreshold="5"
             >
                 <a-image
                     src="assets/asset.png"
