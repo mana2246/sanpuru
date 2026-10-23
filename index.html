@@ -3,8 +3,30 @@
     <head>
         <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-        <!-- クロマキー用のライブラリを追加 -->
         <script src="https://unpkg.com/aframe-chromakey-material/dist/aframe-chromakey-material.min.js"></script>
+        
+        <!-- マーカーを認識したら再生、外れたら停止する仕組みを定義 -->
+        <script>
+            AFRAME.registerComponent('vidhandler', {
+                init: function () {
+                    this.toggle = false;
+                    this.vid = document.querySelector("#vid1");
+                },
+                tick: function () {
+                    if (this.el.object3D.visible === true) {
+                        if (!this.toggle) {
+                            this.toggle = true;
+                            this.vid.play();
+                        }
+                    } else {
+                        if (this.toggle) {
+                            this.toggle = false;
+                            this.vid.pause();
+                        }
+                    }
+                }
+            });
+        </script>
     </head>
 
     <body style="margin: 0; overflow: hidden;">
@@ -29,13 +51,14 @@
                 </video>
             </a-assets>
 
+            <!-- マーカーに vidhandler を追加 -->
             <a-marker
                 id="animated-marker"
                 type="pattern"
                 preset="custom"
                 url="assets/marker.patt"
+                vidhandler
             >
-                <!-- 1枚目：土台の静止画 -->
                 <a-image
                     src="assets/asset.png"
                     width="5.80"
@@ -44,9 +67,8 @@
                     rotation="-90 0 0"
                 ></a-image>
 
-                <!-- 2枚目：動画（クロマキー仕様に変更し、Y軸を0.5に上げて浮かせる） -->
                 <a-entity
-                    material="shader: chromakey; src: #vid1; color: 0.1 0.9 0.2"
+                    material="shader: chromakey; src: #vid1; color: 0.1 0.9 0.2; transparent: true"
                     geometry="primitive: plane; width: 5.80; height: 4.10"
                     position="-2.00 0.5 0"
                     rotation="-90 0 0"
