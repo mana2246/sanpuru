@@ -3,47 +3,9 @@
     <head>
         <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+        <script src="https://unpkg.com/aframe-chromakey-material@1.1.4/dist/aframe-chromakey-material.min.js"></script>
 
         <script>
-          // 外部ライブラリを使わずに緑色を消す自作シェーダー
-          AFRAME.registerShader('chromakey', {
-            schema: {
-              src: {type: 'map'},
-              color: {type: 'color', default: {r: 0.0, g: 1.0, b: 0.0}}
-            },
-            init: function() {
-              var videoLoop = function() {
-                if (this.el.components.material && this.el.components.material.material && this.el.components.material.material.map) {
-                  this.el.components.material.material.map.needsUpdate = true;
-                }
-                requestAnimationFrame(videoLoop.bind(this));
-              }.bind(this);
-              videoLoop();
-            },
-            vertexShader: `
-              varying vec2 vUv;
-              void main(void) {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-              }
-            `,
-            fragmentShader: `
-              uniform sampler2D src;
-              uniform vec3 color;
-              varying vec2 vUv;
-              void main(void) {
-                vec4 tColor = texture2D(src, vUv);
-                float a = abs(tColor.r - color.r) + abs(tColor.g - color.g) + abs(tColor.b - color.b);
-                if (a < 0.5) {
-                  discard;
-                } else {
-                  gl_FragColor = tColor;
-                }
-              }
-            `
-          });
-
-          // マーカー検出＆タップ時の動画再生制御
           AFRAME.registerComponent('ar-video-handler', {
             init: function () {
               var marker = this.el;
@@ -51,9 +13,7 @@
 
               marker.addEventListener('markerFound', function () {
                 if (video) {
-                  video.play().catch(function(e) {
-                    console.log("Autoplay failed:", e);
-                  });
+                  video.play();
                 }
               });
 
@@ -115,12 +75,11 @@
                     height="4.10"
                     position="-2.00 0.01 0"
                     rotation="-90 0 0"
-                    material="shader: chromakey; src: #vid1; color: 0 1 0"
-                ></a-video>
+                    material="shader: chromakey; color: 0 1 0; threshold: 0.25">
+                </a-video>
             </a-marker>
 
             <a-entity camera></a-entity>
         </a-scene>
     </body>
 </html>
-
