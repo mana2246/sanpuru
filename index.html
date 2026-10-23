@@ -4,8 +4,29 @@
         <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
         <script src="https://unpkg.com/aframe-chromakey-material/dist/aframe-chromakey-material.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+
+        <script>
+          AFRAME.registerComponent('ar-video-handler', {
+            init: function () {
+              var marker = this.el;
+              var video = document.querySelector('#vid1');
+
+              marker.addEventListener('markerFound', function () {
+                if (video) {
+                  video.play().catch(function(e) {
+                    console.log("Autoplay blocked:", e);
+                  });
+                }
+              });
+
+              window.addEventListener('touchstart', function () {
+                if (video && video.paused) {
+                  video.play();
+                }
+              });
+            }
+          });
+        </script>
     </head>
 
     <body style="margin: 0; overflow: hidden;">
@@ -15,10 +36,19 @@
             arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
             id="scene"
             embedded
-            gesture-detector
         >
-            <a-assets>
-                <video id="vid1" src="assets/m1.mp4" autoplay loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+            <a-assets timeout="10000">
+                <video 
+                    id="vid1" 
+                    src="assets/m1.mp4" 
+                    preload="auto"
+                    loop 
+                    crossorigin="anonymous" 
+                    webkit-playsinline 
+                    playsinline 
+                    muted 
+                    autoplay>
+                </video>
             </a-assets>
 
             <a-marker
@@ -29,7 +59,7 @@
                 raycaster="objects: .clickable"
                 emitevents="true"
                 cursor="fuse: false; rayOrigin: mouse;"
-                id="markerA"
+                ar-video-handler
             >
                 <!-- 1枚目：土台の静止画 -->
                 <a-image
@@ -40,7 +70,7 @@
                     rotation="-90 0 0"
                 ></a-image>
 
-                <!-- 2枚目：緑背景を消した動画（静止画のすぐ上に配置） -->
+                <!-- 2枚目：緑背景を消した動画 -->
                 <a-video
                     src="#vid1"
                     width="5.80"
