@@ -5,25 +5,24 @@
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
         <script src="https://unpkg.com/aframe-chromakey-material/dist/aframe-chromakey-material.min.js"></script>
         
-        <!-- マーカーを認識したら再生、外れたら停止する仕組みを定義 -->
         <script>
-            AFRAME.registerComponent('vidhandler', {
+            // マーカー認識時に確実に動画をキックする仕組み
+            AFRAME.registerComponent('ar-video-control', {
                 init: function () {
-                    this.toggle = false;
-                    this.vid = document.querySelector("#vid1");
-                },
-                tick: function () {
-                    if (this.el.object3D.visible === true) {
-                        if (!this.toggle) {
-                            this.toggle = true;
-                            this.vid.play();
+                    var video = document.querySelector("#vid1");
+                    
+                    this.el.addEventListener('markerFound', function () {
+                        // iOSのブロックを回避しつつ再生を試みる処理
+                        var playPromise = video.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(function(error) {
+                                console.log("再生ブロック:", error);
+                            });
                         }
-                    } else {
-                        if (this.toggle) {
-                            this.toggle = false;
-                            this.vid.pause();
-                        }
-                    }
+                    });
+                    this.el.addEventListener('markerLost', function () {
+                        video.pause();
+                    });
                 }
             });
         </script>
@@ -38,26 +37,26 @@
             embedded
         >
             <a-assets>
+                <!-- srcの末尾に #t=0.001 を追加してiOSの描画バグを回避 -->
                 <video 
                     id="vid1" 
-                    src="assets/m1.mp4" 
+                    src="assets/m1.mp4#t=0.001" 
                     preload="auto"
                     loop 
-                    crossorigin="anonymous" 
-                    webkit-playsinline 
                     playsinline 
+                    webkit-playsinline 
                     muted 
                     autoplay>
                 </video>
             </a-assets>
 
-            <!-- マーカーに vidhandler を追加 -->
+            <!-- ar-video-controlを追加 -->
             <a-marker
                 id="animated-marker"
                 type="pattern"
                 preset="custom"
                 url="assets/marker.patt"
-                vidhandler
+                ar-video-control
             >
                 <a-image
                     src="assets/asset.png"
