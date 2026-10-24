@@ -3,8 +3,6 @@
     <head>
         <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
         <script src="https://unpkg.com/aframe-chromakey-material/dist/aframe-chromakey-material.min.js"></script>
         
         <script>
@@ -39,7 +37,6 @@
             arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
             id="scene"
             embedded
-            gesture-detector
         >
             <a-assets>
                 <video id="vid-m1" src="assets/m1.mp4#t=0.001" preload="auto" loop playsinline webkit-playsinline muted autoplay></video>
@@ -47,14 +44,12 @@
                 <video id="vid-m3" src="assets/m3.mp4#t=0.001" preload="auto" loop playsinline webkit-playsinline muted autoplay></video>
             </a-assets>
 
+            <!-- 誤作動の原因になっていた raycaster や cursor の設定を削除 -->
             <a-marker
                 id="animated-marker"
                 type="pattern"
                 preset="custom"
                 url="assets/marker.patt"
-                raycaster="objects: .clickable"
-                emitevents="true"
-                cursor="fuse: false; rayOrigin: mouse;"
                 ar-video-control
                 smooth="true"
                 smoothCount="10"
@@ -62,14 +57,13 @@
                 smoothThreshold="5"
             >
                 <!-- 1枚目：土台の静止画 (Y軸: 0) -->
+                <!-- gesture-handler や class="clickable" を削除 -->
                 <a-image
                     src="assets/asset.png"
                     width="5.80"
                     height="4.10"
                     position="-2.00 0 0"
                     rotation="-90 0 0"
-                    class="clickable"
-                    gesture-handler
                 ></a-image>
 
                 <!-- 2枚目：m1（一番奥 Y軸: 0.25） -->
@@ -80,4 +74,24 @@
                     rotation="-90 0 0"
                 ></a-entity>
 
-                <!-- 3枚目：m2（m1の手前 Y軸: 0.5
+                <!-- 3枚目：m2（m1の手前 Y軸: 0.5） -->
+                <a-entity
+                    material="shader: chromakey; src: #vid-m2; color: 0.1 0.9 0.2; transparent: true"
+                    geometry="primitive: plane; width: 5.80; height: 4.10"
+                    position="-2.00 0.5 0"
+                    rotation="-90 0 0"
+                ></a-entity>
+
+                <!-- 4枚目：m3（一番手前 Y軸: 0.75） -->
+                <a-entity
+                    material="shader: chromakey; src: #vid-m3; color: 0.1 0.9 0.2; transparent: true"
+                    geometry="primitive: plane; width: 5.80; height: 4.10"
+                    position="-2.00 0.75 0"
+                    rotation="-90 0 0"
+                ></a-entity>
+            </a-marker>
+
+            <a-entity camera></a-entity>
+        </a-scene>
+    </body>
+</html>
