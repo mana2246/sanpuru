@@ -3,9 +3,14 @@
     <head>
         <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+        <!-- ジェスチャー操作用のスクリプト -->
+        <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
+        <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+        <!-- クロマキー用のスクリプト -->
         <script src="https://unpkg.com/aframe-chromakey-material/dist/aframe-chromakey-material.min.js"></script>
         
         <script>
+            // すべての動画をマーカー認識時に自動再生する処理
             AFRAME.registerComponent('ar-video-control', {
                 init: function () {
                     var videos = document.querySelectorAll("video");
@@ -37,54 +42,53 @@
             arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
             id="scene"
             embedded
+            gesture-detector
         >
             <a-assets>
-                <video id="vid1" src="assets/m1.mp4#t=0.001" preload="auto" loop playsinline webkit-playsinline muted autoplay></video>
-                <video id="vid2" src="assets/m2.mp4#t=0.001" preload="auto" loop playsinline webkit-playsinline muted autoplay></video>
-                <video id="vid3" src="assets/m3.mp4#t=0.001" preload="auto" loop playsinline webkit-playsinline muted autoplay></video>
+                <!-- s2とs1の動画を読み込み（iOS対策の #t=0.001 付き） -->
+                <video id="vid-s2" src="assets/s2.mp4#t=0.001" preload="auto" loop playsinline webkit-playsinline muted autoplay></video>
+                <video id="vid-s1" src="assets/s1.mp4#t=0.001" preload="auto" loop playsinline webkit-playsinline muted autoplay></video>
             </a-assets>
 
+            <!-- 提示された属性に、自動再生とブレ補正を追加（重複していたid="markerA"は削除） -->
             <a-marker
                 id="animated-marker"
                 type="pattern"
                 preset="custom"
                 url="assets/marker.patt"
+                raycaster="objects: .clickable"
+                emitevents="true"
+                cursor="fuse: false; rayOrigin: mouse;"
                 ar-video-control
                 smooth="true"
                 smoothCount="10"
                 smoothTolerance="0.01"
                 smoothThreshold="5"
             >
-                <!-- 1枚目：土台の静止画 (Y軸: 0) -->
+                <!-- 1枚目：土台の静止画（前回のサイズと位置を適用） -->
                 <a-image
                     src="assets/asset.png"
                     width="5.80"
                     height="4.10"
                     position="-2.00 0 0"
                     rotation="-90 0 0"
+                    class="clickable"
+                    gesture-handler
                 ></a-image>
 
-                <!-- 2枚目：m1（一番奥 Y軸: 0.25） -->
+                <!-- 2枚目：s2（奥側 Y軸: 0.25） -->
                 <a-entity
-                    material="shader: chromakey; src: #vid1; color: 0.1 0.9 0.2; transparent: true"
+                    material="shader: chromakey; src: #vid-s2; color: 0.1 0.9 0.2; transparent: true"
                     geometry="primitive: plane; width: 5.80; height: 4.10"
                     position="-2.00 0.25 0"
                     rotation="-90 0 0"
                 ></a-entity>
 
-                <!-- 3枚目：m3（m1の手前 Y軸: 0.5） -->
+                <!-- 3枚目：s1（手前側 Y軸: 0.5） -->
                 <a-entity
-                    material="shader: chromakey; src: #vid3; color: 0.1 0.9 0.2; transparent: true"
+                    material="shader: chromakey; src: #vid-s1; color: 0.1 0.9 0.2; transparent: true"
                     geometry="primitive: plane; width: 5.80; height: 4.10"
                     position="-2.00 0.5 0"
-                    rotation="-90 0 0"
-                ></a-entity>
-
-                <!-- 4枚目：m2（一番手前 Y軸: 0.75） -->
-                <a-entity
-                    material="shader: chromakey; src: #vid2; color: 0.1 0.9 0.2; transparent: true"
-                    geometry="primitive: plane; width: 5.80; height: 4.10"
-                    position="-2.00 0.75 0"
                     rotation="-90 0 0"
                 ></a-entity>
             </a-marker>
