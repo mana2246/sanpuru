@@ -8,18 +8,25 @@
         <script>
             AFRAME.registerComponent('ar-video-control', {
                 init: function () {
-                    var video = document.querySelector("#vid1");
+                    // ページ内のすべてのvideo要素を取得
+                    var videos = document.querySelectorAll("video");
                     
                     this.el.addEventListener('markerFound', function () {
-                        var playPromise = video.play();
-                        if (playPromise !== undefined) {
-                            playPromise.catch(function(error) {
-                                console.log("再生ブロック:", error);
-                            });
-                        }
+                        // マーカー認識時にすべての動画を再生
+                        videos.forEach(function(video) {
+                            var playPromise = video.play();
+                            if (playPromise !== undefined) {
+                                playPromise.catch(function(error) {
+                                    console.log("再生ブロック:", error);
+                                });
+                            }
+                        });
                     });
                     this.el.addEventListener('markerLost', function () {
-                        video.pause();
+                        // マーカーが外れたらすべての動画を停止
+                        videos.forEach(function(video) {
+                            video.pause();
+                        });
                     });
                 }
             });
@@ -35,19 +42,12 @@
             embedded
         >
             <a-assets>
-                <video 
-                    id="vid1" 
-                    src="assets/m1.mp4#t=0.001" 
-                    preload="auto"
-                    loop 
-                    playsinline 
-                    webkit-playsinline 
-                    muted 
-                    autoplay>
-                </video>
+                <!-- 3つの動画を定義 -->
+                <video id="vid2" src="assets/m2.mp4#t=0.001" preload="auto" loop playsinline webkit-playsinline muted autoplay></video>
+                <video id="vid1" src="assets/m1.mp4#t=0.001" preload="auto" loop playsinline webkit-playsinline muted autoplay></video>
+                <video id="vid3" src="assets/m3.mp4#t=0.001" preload="auto" loop playsinline webkit-playsinline muted autoplay></video>
             </a-assets>
 
-            <!-- ブレ補正の属性を追加 -->
             <a-marker
                 id="animated-marker"
                 type="pattern"
@@ -59,6 +59,7 @@
                 smoothTolerance="0.01"
                 smoothThreshold="5"
             >
+                <!-- 1枚目：土台の静止画 (Y軸: 0) -->
                 <a-image
                     src="assets/asset.png"
                     width="5.80"
@@ -67,10 +68,27 @@
                     rotation="-90 0 0"
                 ></a-image>
 
+                <!-- 2枚目：m2（m1の少し後ろ Y軸: 0.25） -->
+                <a-entity
+                    material="shader: chromakey; src: #vid2; color: 0.1 0.9 0.2; transparent: true"
+                    geometry="primitive: plane; width: 5.80; height: 4.10"
+                    position="-2.00 0.25 0"
+                    rotation="-90 0 0"
+                ></a-entity>
+
+                <!-- 3枚目：m1（真ん中 Y軸: 0.5） -->
                 <a-entity
                     material="shader: chromakey; src: #vid1; color: 0.1 0.9 0.2; transparent: true"
                     geometry="primitive: plane; width: 5.80; height: 4.10"
                     position="-2.00 0.5 0"
+                    rotation="-90 0 0"
+                ></a-entity>
+
+                <!-- 4枚目：m3（m1の少し前 Y軸: 0.75） -->
+                <a-entity
+                    material="shader: chromakey; src: #vid3; color: 0.1 0.9 0.2; transparent: true"
+                    geometry="primitive: plane; width: 5.80; height: 4.10"
+                    position="-2.00 0.75 0"
                     rotation="-90 0 0"
                 ></a-entity>
             </a-marker>
